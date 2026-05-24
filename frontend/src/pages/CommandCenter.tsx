@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { Radar, LayoutDashboard, History, Settings, ChevronLeft, Cpu, Square } from 'lucide-react'
 import { useWebSocket } from '../hooks/useWebSocket'
+import type { TelemetryData } from '../hooks/types'
 import TelemetryPanel from '../components/TelemetryPanel'
 import VideoFeed from '../components/VideoFeed'
 import MissionMap from '../components/MissionMap'
@@ -48,27 +49,6 @@ function Sidebar({ onBack }: { onBack: () => void }) {
       </div>
     </div>
   )
-}
-
-interface TelemetryData {
-  gps_source?: string
-  mode?: string
-  battery_remaining?: number | null
-  rpi_fix?: number
-  rpi_lat?: number | null
-  rpi_lon?: number | null
-  lat?: number | null
-  lon?: number | null
-  rpi_alt?: number | null
-  altitude?: number | null
-  rescue_path_pixels?: [number, number][] | null
-  flood_centroids?: [number, number][] | null
-  frame_b64?: string | null
-  flood_mask_b64?: string | null
-  flood_heatmap_b64?: string | null
-  flood_coverage?: number | null
-  connected?: boolean
-  [key: string]: unknown
 }
 
 function StatusBar({ connected, data }: { connected: boolean; data: TelemetryData | null }) {
