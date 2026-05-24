@@ -11,7 +11,10 @@ except ImportError:
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
-def compute_rescue_path(flood_map: np.ndarray, drone_pixel: tuple[int, int]) -> list[list[int]]:
+
+def compute_rescue_path(
+    flood_map: np.ndarray, drone_pixel: tuple[int, int]
+) -> list[list[int]]:
     try:
         if astar is None or create_cost_map is None:
             logger.error("floodnav modules not found.")
@@ -28,17 +31,17 @@ def compute_rescue_path(flood_map: np.ndarray, drone_pixel: tuple[int, int]) -> 
 
         safe_zone_mask = flood_map < 0.3
         safe_ys, safe_xs = np.where(safe_zone_mask)
-        
+
         if len(safe_ys) == 0:
             return []
 
-        dists = (safe_xs - drone_x)**2 + (safe_ys - drone_y)**2
+        dists = (safe_xs - drone_x) ** 2 + (safe_ys - drone_y) ** 2
         best_idx = int(np.argmin(dists))
         goal = (int(safe_xs[best_idx]), int(safe_ys[best_idx]))
 
         path, cost = astar(cost_map, start=start, goal=goal)
 
-        if not path or cost == float('inf'):
+        if not path or cost == float("inf"):
             return []
 
         simp = path[::5]

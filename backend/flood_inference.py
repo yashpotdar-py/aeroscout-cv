@@ -38,9 +38,10 @@ except Exception as e:
     logger.error(f"Load _segmenter fail: {e}")
     _segmenter = None
 
+
 def run_inference(frame_b64: str) -> dict | None:
     global _last_run_ts, _cached_result, _is_running
-    
+
     if _segmenter is None:
         return None
 
@@ -54,24 +55,24 @@ def run_inference(frame_b64: str) -> dict | None:
 
     try:
         start_ts = time.time()
-        
+
         # decode -> np
         frame_bytes = base64.b64decode(frame_b64)
         img = Image.open(io.BytesIO(frame_bytes)).convert("RGB")
         img_np = np.array(img, dtype=np.uint8)
-        
+
         # predict (torch.no_grad inside)
         flood_map = _segmenter.predict(img_np)
-        
+
         # --- Threshold: raised to 0.68 to reduce false positives on non-flood terrain ---
         THRESHOLD = 0.68
         mask_bool = flood_map > THRESHOLD
         coverage_pct = float(np.mean(mask_bool) * 100)
-        
+
         # render RGBA mask — only high-confidence pixels, semi-transparent purple
         rgba = np.zeros((256, 256, 4), dtype=np.uint8)
         rgba[mask_bool] = [168, 85, 247, 140]
-        
+
         # encode mask png
         out_img = Image.fromarray(rgba, "RGBA")
         buf = io.BytesIO()
@@ -81,21 +82,23 @@ def run_inference(frame_b64: str) -> dict | None:
         # render heatmap — only show pixels above 0.45, scale within that range
         # This compresses the visible range so low-confidence noise disappears
         flood_map_clamped = np.clip(flood_map, 0.0, 1.0)
-        HEATMAP_LOW = 0.45   # below this → fully transparent
+        HEATMAP_LOW = 0.45  # below this → fully transparent
         HEATMAP_HIGH = 1.0
 
         visible = flood_map_clamped >= HEATMAP_LOW
         # normalise within [HEATMAP_LOW, HEATMAP_HIGH] → [0, 1]
         norm = np.zeros_like(flood_map_clamped)
-        norm[visible] = (flood_map_clamped[visible] - HEATMAP_LOW) / (HEATMAP_HIGH - HEATMAP_LOW)
+        norm[visible] = (flood_map_clamped[visible] - HEATMAP_LOW) / (
+            HEATMAP_HIGH - HEATMAP_LOW
+        )
 
         # colour ramp: deep blue (low) → orange (mid) → red (high)
-        c_low  = np.array([20,  60, 200, 180], dtype=np.float32)
-        c_mid  = np.array([255, 140,  0, 200], dtype=np.float32)
-        c_high = np.array([220,  20, 20, 230], dtype=np.float32)
+        c_low = np.array([20, 60, 200, 180], dtype=np.float32)
+        c_mid = np.array([255, 140, 0, 200], dtype=np.float32)
+        c_high = np.array([220, 20, 20, 230], dtype=np.float32)
 
         heatmap_rgba = np.zeros((256, 256, 4), dtype=np.float32)
-        mid_mask  = visible & (norm <  0.5)
+        mid_mask = visible & (norm < 0.5)
         high_mask = visible & (norm >= 0.5)
 
         if mid_mask.any():
@@ -107,12 +110,12 @@ def run_inference(frame_b64: str) -> dict | None:
             heatmap_rgba[high_mask] = c_mid * (1.0 - t) + c_high * t
 
         heatmap_rgba = heatmap_rgba.astype(np.uint8)
-        
+
         out_heatmap = Image.fromarray(heatmap_rgba, "RGBA")
         buf_hm = io.BytesIO()
         out_heatmap.save(buf_hm, format="PNG")
         flood_heatmap_b64 = base64.b64encode(buf_hm.getvalue()).decode("utf-8")
-        
+
         # compute centroids
         flood_centroids = []
         labeled_array, num_features = scipy.ndimage.label(mask_bool)
@@ -122,30 +125,30 @@ def run_inference(frame_b64: str) -> dict | None:
             for i in range(1, num_features + 1):
                 if areas[i] > 80:
                     valid_labels.append((i, areas[i]))
-            
+
             valid_labels.sort(key=lambda x: x[1], reverse=True)
             top_labels = [vl[0] for vl in valid_labels[:5]]
-            
+
             for idx in top_labels:
                 r, c = scipy.ndimage.center_of_mass(mask_bool, labeled_array, index=idx)
                 flood_centroids.append([float(c), float(r)])
-        
+
         inf_ms = int((time.time() - start_ts) * 1000)
-        
+
         res = {
             "mask_b64": mask_b64,
             "flood_heatmap_b64": flood_heatmap_b64,
             "flood_centroids": flood_centroids,
             "coverage_pct": coverage_pct,
-            "inference_ms": inf_ms
+            "inference_ms": inf_ms,
         }
-        
+
         with _lock:
             _last_run_ts = now
             _cached_result = res
-            
+
         return res
-        
+
     except Exception as e:
         logger.error(f"Inference err: {e}")
         return None

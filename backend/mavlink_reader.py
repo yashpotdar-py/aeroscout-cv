@@ -83,7 +83,8 @@ class MAVLinkReader:
                     self._master.target_system,
                     self._master.target_component,
                     mavutil.mavlink.MAV_DATA_STREAM_ALL,
-                    10, 1
+                    10,
+                    1,
                 )
                 self._read_loop()
             except Exception as e:
@@ -120,29 +121,30 @@ class MAVLinkReader:
 
             elif t == "ATTITUDE":
                 import math
-                self._state["roll"]  = round(math.degrees(msg.roll), 2)
+
+                self._state["roll"] = round(math.degrees(msg.roll), 2)
                 self._state["pitch"] = round(math.degrees(msg.pitch), 2)
-                self._state["yaw"]   = round(math.degrees(msg.yaw), 2)
+                self._state["yaw"] = round(math.degrees(msg.yaw), 2)
 
             elif t == "VFR_HUD":
-                self._state["airspeed"]    = round(msg.airspeed, 2)
+                self._state["airspeed"] = round(msg.airspeed, 2)
                 self._state["groundspeed"] = round(msg.groundspeed, 2)
-                self._state["altitude"]    = round(msg.alt, 2)
-                self._state["heading"]     = msg.heading
-                self._state["throttle"]    = msg.throttle
+                self._state["altitude"] = round(msg.alt, 2)
+                self._state["heading"] = msg.heading
+                self._state["throttle"] = msg.throttle
 
             elif t == "GLOBAL_POSITION_INT":
                 self._state["lat"] = round(msg.lat / 1e7, 7)
                 self._state["lon"] = round(msg.lon / 1e7, 7)
-                self._state["alt_msl"]    = round(msg.alt / 1000.0, 2)
-                self._state["alt_rel"]    = round(msg.relative_alt / 1000.0, 2)
+                self._state["alt_msl"] = round(msg.alt / 1000.0, 2)
+                self._state["alt_rel"] = round(msg.relative_alt / 1000.0, 2)
                 self._state["vx"] = round(msg.vx / 100.0, 2)
                 self._state["vy"] = round(msg.vy / 100.0, 2)
                 self._state["vz"] = round(msg.vz / 100.0, 2)
 
             elif t == "SYS_STATUS":
-                self._state["battery_voltage"]   = round(msg.voltage_battery / 1000.0, 2)
-                self._state["battery_current"]   = round(msg.current_battery / 100.0, 2)
+                self._state["battery_voltage"] = round(msg.voltage_battery / 1000.0, 2)
+                self._state["battery_current"] = round(msg.current_battery / 100.0, 2)
                 self._state["battery_remaining"] = msg.battery_remaining
 
             elif t == "BATTERY_STATUS":
@@ -151,11 +153,20 @@ class MAVLinkReader:
                     self._state["battery_voltage"] = round(msg.voltages[0] / 1000.0, 2)
 
             elif t == "GPS_RAW_INT":
-                fix_map = {0: "No Fix", 1: "No Fix", 2: "2D", 3: "3D",
-                           4: "DGPS", 5: "RTK Float", 6: "RTK Fixed"}
-                self._state["gps_fix"]  = fix_map.get(msg.fix_type, "Unknown")
+                fix_map = {
+                    0: "No Fix",
+                    1: "No Fix",
+                    2: "2D",
+                    3: "3D",
+                    4: "DGPS",
+                    5: "RTK Float",
+                    6: "RTK Fixed",
+                }
+                self._state["gps_fix"] = fix_map.get(msg.fix_type, "Unknown")
                 self._state["satellites"] = msg.satellites_visible
-                self._state["hdop"] = round(msg.eph / 100.0, 2) if msg.eph != 65535 else 99.0
+                self._state["hdop"] = (
+                    round(msg.eph / 100.0, 2) if msg.eph != 65535 else 99.0
+                )
 
             elif t == "EKF_STATUS_REPORT":
                 self._state["ekf_ok"] = bool(msg.flags & 0x1F == 0x1F)
@@ -167,31 +178,31 @@ class MAVLinkReader:
     @staticmethod
     def _empty_state() -> dict:
         return {
-            "connected":        False,
-            "armed":            False,
-            "mode":             "UNKNOWN",
-            "roll":             0.0,
-            "pitch":            0.0,
-            "yaw":              0.0,
-            "airspeed":         0.0,
-            "groundspeed":      0.0,
-            "altitude":         0.0,
-            "alt_msl":          0.0,
-            "alt_rel":          0.0,
-            "heading":          0,
-            "throttle":         0,
-            "vx":               0.0,
-            "vy":               0.0,
-            "vz":               0.0,
-            "lat":              0.0,
-            "lon":              0.0,
-            "battery_voltage":  0.0,
-            "battery_current":  0.0,
+            "connected": False,
+            "armed": False,
+            "mode": "UNKNOWN",
+            "roll": 0.0,
+            "pitch": 0.0,
+            "yaw": 0.0,
+            "airspeed": 0.0,
+            "groundspeed": 0.0,
+            "altitude": 0.0,
+            "alt_msl": 0.0,
+            "alt_rel": 0.0,
+            "heading": 0,
+            "throttle": 0,
+            "vx": 0.0,
+            "vy": 0.0,
+            "vz": 0.0,
+            "lat": 0.0,
+            "lon": 0.0,
+            "battery_voltage": 0.0,
+            "battery_current": 0.0,
             "battery_remaining": -1,
-            "gps_fix":          "No Fix",
-            "satellites":       0,
-            "hdop":             99.0,
-            "ekf_ok":           False,
-            "last_statustext":  "",
-            "last_msg_ts":      0.0,
+            "gps_fix": "No Fix",
+            "satellites": 0,
+            "hdop": 99.0,
+            "ekf_ok": False,
+            "last_statustext": "",
+            "last_msg_ts": 0.0,
         }

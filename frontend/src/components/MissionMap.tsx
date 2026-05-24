@@ -71,9 +71,8 @@ export default function MissionMap({ lat, lon, connected, alt, rescue_path_pixel
     mapRef.current = map
     setTimeout(() => map.invalidateSize(), 0)
     return () => { map.remove(); mapRef.current = null }
-  // mapTheme and mapType are intentionally included to satisfy exhaustive-deps.
+  // mapTheme and mapType are included to satisfy exhaustive-deps.
   // The `mapRef.current` guard prevents re-initialization after the first mount.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapTheme, mapType])
 
   useEffect(() => {

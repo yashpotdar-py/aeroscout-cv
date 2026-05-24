@@ -18,7 +18,11 @@ const stamp = () => {
 }
 
 export default function MissionLog({ data, connected }: MissionLogProps) {
-  const [entries, setEntries] = useState<LogEntry[]>([])
+  // Boot message is seeded directly into initial state to avoid
+  // a synchronous setState call inside a useEffect (set-state-in-effect rule).
+  const [entries, setEntries] = useState<LogEntry[]>(() => [
+    { id: ++entryId, ts: stamp(), type: 'SYS', message: 'AEROSCOUT_OS BOOT SEQUENCE INITIATED.' },
+  ])
   const scrollRef = useRef<HTMLDivElement>(null)
   const prevConnectedRef = useRef<boolean | null>(null)
   const lastTelemetryPushRef = useRef<number>(0)
@@ -32,7 +36,7 @@ export default function MissionLog({ data, connected }: MissionLogProps) {
     })
   }
 
-  useEffect(() => { push('SYS', 'AEROSCOUT_OS BOOT SEQUENCE INITIATED.') }, [])
+
 
   useEffect(() => {
     if (prevConnectedRef.current === null) { prevConnectedRef.current = connected; return }

@@ -43,9 +43,7 @@ class DemoStreamer:
 
         self._total_frames = int(self._cap.get(cv2.CAP_PROP_FRAME_COUNT))
         if self._total_frames <= 0:
-            raise FileNotFoundError(
-                f"DemoStreamer: video '{video_path}' has 0 frames"
-            )
+            raise FileNotFoundError(f"DemoStreamer: video '{video_path}' has 0 frames")
 
         self.fps = self._cap.get(cv2.CAP_PROP_FPS) or 30.0
         self.frame_step = max(1, round(self.fps / 10))
@@ -54,9 +52,7 @@ class DemoStreamer:
         try:
             df = pd.read_csv(csv_path, skipinitialspace=True)
         except FileNotFoundError:
-            raise FileNotFoundError(
-                f"DemoStreamer: cannot open CSV file '{csv_path}'"
-            )
+            raise FileNotFoundError(f"DemoStreamer: cannot open CSV file '{csv_path}'")
 
         # Filter to video-only rows if the column exists
         if "isVideo" in df.columns:
@@ -104,30 +100,27 @@ class DemoStreamer:
         self._frame_idx += self.frame_step
 
         # Sum individual cell voltages for total pack voltage
-        voltage = sum(
-            _safe_float(row.get(f"voltageCell{i}", 0))
-            for i in range(1, 7)
-        )
+        voltage = sum(_safe_float(row.get(f"voltageCell{i}", 0)) for i in range(1, 7))
 
         return {
-            "frame_bgr":      frame_bgr,
-            "lat":            _safe_float(row.get("latitude")),
-            "lon":            _safe_float(row.get("longitude")),
-            "alt_m":          _safe_float(row.get("altitude(feet)")) * _FEET_TO_METRES,
-            "heading":        _safe_float(row.get("compass_heading(degrees)")),
-            "airspeed_mps":   _safe_float(row.get("speed(mph)")) * _MPH_TO_MPS,
-            "satellites":     int(_safe_float(row.get("satellites", 0))),
+            "frame_bgr": frame_bgr,
+            "lat": _safe_float(row.get("latitude")),
+            "lon": _safe_float(row.get("longitude")),
+            "alt_m": _safe_float(row.get("altitude(feet)")) * _FEET_TO_METRES,
+            "heading": _safe_float(row.get("compass_heading(degrees)")),
+            "airspeed_mps": _safe_float(row.get("speed(mph)")) * _MPH_TO_MPS,
+            "satellites": int(_safe_float(row.get("satellites", 0))),
             # ── Enhanced telemetry ──
-            "battery_pct":    _safe_float(row.get("battery_percent")),
-            "voltage":        round(voltage, 3),
-            "current":        _safe_float(row.get("current(A)")),
-            "pitch":          _safe_float(row.get("pitch(degrees)")),
-            "roll":           _safe_float(row.get("roll(degrees)")),
-            "gimbal_pitch":   _safe_float(row.get("gimbal_pitch(degrees)")),
-            "vx":             _safe_float(row.get("xSpeed(mph)")) * _MPH_TO_MPS,
-            "vy":             _safe_float(row.get("ySpeed(mph)")) * _MPH_TO_MPS,
-            "vz":             _safe_float(row.get("zSpeed(mph)")) * _MPH_TO_MPS,
-            "fly_state":      str(row.get("flycState", "P-GPS")),
+            "battery_pct": _safe_float(row.get("battery_percent")),
+            "voltage": round(voltage, 3),
+            "current": _safe_float(row.get("current(A)")),
+            "pitch": _safe_float(row.get("pitch(degrees)")),
+            "roll": _safe_float(row.get("roll(degrees)")),
+            "gimbal_pitch": _safe_float(row.get("gimbal_pitch(degrees)")),
+            "vx": _safe_float(row.get("xSpeed(mph)")) * _MPH_TO_MPS,
+            "vy": _safe_float(row.get("ySpeed(mph)")) * _MPH_TO_MPS,
+            "vz": _safe_float(row.get("zSpeed(mph)")) * _MPH_TO_MPS,
+            "fly_state": str(row.get("flycState", "P-GPS")),
         }
 
     def release(self) -> None:

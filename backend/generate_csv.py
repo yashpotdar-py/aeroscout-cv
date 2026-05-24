@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 
+
 def main():
     # Center
     LAT_C = 26.4499
@@ -34,29 +35,31 @@ def main():
 
     # Calculate cumulative distance for interpolation
     def dist(p1, p2):
-        return np.hypot(p1[0]-p2[0], p1[1]-p2[1])
+        return np.hypot(p1[0] - p2[0], p1[1] - p2[1])
 
     dists = [0]
     for i in range(1, len(waypoints)):
-        dists.append(dists[-1] + dist(waypoints[i-1], waypoints[i]))
+        dists.append(dists[-1] + dist(waypoints[i - 1], waypoints[i]))
 
     total_dist = dists[-1]
-    
+
     # Interpolate points
     interp_dists = np.linspace(0, total_dist, ROWS)
     lats = np.interp(interp_dists, dists, [p[0] for p in waypoints])
     lons = np.interp(interp_dists, dists, [p[1] for p in waypoints])
 
     # Build dataframe
-    df = pd.DataFrame({
-        "time(millisecond)": np.arange(ROWS) * 100,
-        "latitude": lats,
-        "longitude": lons,
-        "altitude(feet)": 393.701,
-        "speed(mph)": 17.895,
-        "satellites": 14,
-        "isVideo": 1,
-    })
+    df = pd.DataFrame(
+        {
+            "time(millisecond)": np.arange(ROWS) * 100,
+            "latitude": lats,
+            "longitude": lons,
+            "altitude(feet)": 393.701,
+            "speed(mph)": 17.895,
+            "satellites": 14,
+            "isVideo": 1,
+        }
+    )
 
     # Battery and voltage
     df["battery_percent"] = np.maximum(85.0 - np.arange(ROWS) * 0.025, 5.0)
@@ -66,7 +69,7 @@ def main():
     headings = []
     for i in range(ROWS):
         if i < ROWS - 1:
-            dlon = df.loc[i+1, "longitude"] - df.loc[i, "longitude"]
+            dlon = df.loc[i + 1, "longitude"] - df.loc[i, "longitude"]
             if dlon > 1e-6:
                 h = 90
             elif dlon < -1e-6:
@@ -81,15 +84,22 @@ def main():
 
     os.makedirs("demo_data", exist_ok=True)
     out_path = os.path.join("demo_data", "flight_log.csv")
-    
+
     # Reorder columns to match original if needed
     cols = [
-        "time(millisecond)", "latitude", "longitude", "altitude(feet)",
-        "compass_heading(degrees)", "speed(mph)", "satellites",
-        "battery_percent", "isVideo", "voltage(v)"
+        "time(millisecond)",
+        "latitude",
+        "longitude",
+        "altitude(feet)",
+        "compass_heading(degrees)",
+        "speed(mph)",
+        "satellites",
+        "battery_percent",
+        "isVideo",
+        "voltage(v)",
     ]
     df = df[cols]
-    
+
     # Round to specific decimals like original script
     df["latitude"] = df["latitude"].round(8)
     df["longitude"] = df["longitude"].round(8)
@@ -98,12 +108,13 @@ def main():
     df["speed(mph)"] = df["speed(mph)"].round(3)
     df["battery_percent"] = df["battery_percent"].round(3)
     df["voltage(v)"] = df["voltage(v)"].round(4)
-    
+
     df.to_csv(out_path, index=False)
 
     print(df[["latitude", "longitude"]].head(3))
     print(f"Lat range: {df['latitude'].min():.4f} to {df['latitude'].max():.4f}")
     print(f"Lon range: {df['longitude'].min():.4f} to {df['longitude'].max():.4f}")
+
 
 if __name__ == "__main__":
     main()

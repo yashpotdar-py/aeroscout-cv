@@ -1,19 +1,16 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 export default function Navbar() {
   const location = useLocation()
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' | null
-    if (savedTheme) {
-      setTheme(savedTheme)
-      document.documentElement.setAttribute('data-theme', savedTheme)
-    } else {
-      document.documentElement.setAttribute('data-theme', 'dark')
-    }
-  }, [])
+  // Lazy initializer: reads localStorage synchronously before first render.
+  // This avoids a synchronous setState inside a useEffect (set-state-in-effect).
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('theme') as 'dark' | 'light' | null
+    const initial = saved ?? 'dark'
+    document.documentElement.setAttribute('data-theme', initial)
+    return initial
+  })
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark'
