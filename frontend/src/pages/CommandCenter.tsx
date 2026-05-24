@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { Radar, LayoutDashboard, History, Settings, ChevronLeft, Cpu, Square } from 'lucide-react'
 import { useWebSocket } from '../hooks/useWebSocket'
 import type { TelemetryData } from '../hooks/types'
+import { BACKEND_WS_URL, BACKEND_HTTP_URL } from '../config'
 import TelemetryPanel from '../components/TelemetryPanel'
 import VideoFeed from '../components/VideoFeed'
 import MissionMap from '../components/MissionMap'
@@ -102,7 +103,7 @@ function StatusBar({ connected, data }: { connected: boolean; data: TelemetryDat
 
 export default function CommandCenter() {
   const navigate = useNavigate()
-  const { data, connected } = useWebSocket('ws://localhost:8000/ws')
+  const { data, connected } = useWebSocket(BACKEND_WS_URL)
 
   const lat: number | null = (data?.rpi_fix ?? 0) >= 2 ? (data?.rpi_lat ?? null) : (data?.lat ?? null)
   const lon: number | null = (data?.rpi_fix ?? 0) >= 2 ? (data?.rpi_lon ?? null) : (data?.lon ?? null)
@@ -131,7 +132,7 @@ export default function CommandCenter() {
           </div>
         </div>
       </div>
-      <DemoToggle />
+      <DemoToggle apiBase={BACKEND_HTTP_URL} />
     </div>
   )
 }

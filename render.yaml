@@ -1,0 +1,79 @@
+# ─── AeroScout-CV — Render Blueprint ───────────────────────────────────────────
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Services:
+#   1. aeroscout-backend  — FastAPI + ML inference (Docker web service)
+#   2. aeroscout-frontend — React SPA (static site, free tier)
+#
+# To deploy:
+#   1. Push this file to your GitHub repo root (already done).
+#   2. Go to https://dashboard.render.com → New → Blueprint.
+#   3. Connect the yashpotdar-py/aeroscout-cv repo.
+#   4. Render will auto-detect this file and create both services.
+# ────────────────────────────────────────────────────────────────────────────────
+
+services:
+  # ── Backend: FastAPI / ML inference ─────────────────────────────────────────
+  - type: web
+    name: aeroscout-backend
+    runtime: docker
+    # Build from the backend/ subdirectory's Dockerfile
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter          # Docker services require at least Starter
+    region: oregon         # Choose: oregon | ohio | virginia | frankfurt | singapore
+    healthCheckPath: /health
+    # Graceful shutdown — give the WS broadcaster time to close connections
+    maxShutdownDelaySeconds: 30
+    envVars:
+      # Path to the ML model weights file (relative to /app inside the container).
+      # The model is NOT in the repo — mount it via a persistent disk or leave
+      # this pointing to a non-existent path; the backend will run without ML.
+      - key: MODEL_PATH
+        value: models/flood_unet.pth
+      # MAVLink connection string. For a real drone, change to your MAVLink URI.
+      # In a cloud deployment without hardware, demo mode still works fully.
+      - key: MAVLINK_CONNECTION
+        value: udpin:0.0.0.0:14550
+      - key: LOG_LEVEL
+        value: info
+
+  # ── Frontend: React SPA (static site) ───────────────────────────────────────
+  - type: web
+    name: aeroscout-frontend
+    runtime: static
+    # Build from the repo root so the frontend/ directory is accessible
+    buildCommand: cd frontend && npm ci && npm run build
+    staticPublishPath: ./frontend/dist
+    plan: free             # Static sites are always free on Render
+    # ── Backend URL injection ──────────────────────────────────────────────────
+    # Render automatically sets RENDER_EXTERNAL_URL on every web service.
+    # We forward the backend's public URL to the frontend build so Vite can
+    # embed it at compile time (VITE_ prefix exposes it to client-side code).
+    envVars:
+      - key: VITE_BACKEND_HTTP_URL
+        fromService:
+          type: web
+          name: aeroscout-backend
+          envVarKey: RENDER_EXTERNAL_URL
+    # ── SPA routing ────────────────────────────────────────────────────────────
+    # All non-asset paths fall through to index.html so React Router works.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      # Security headers
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      # Cache static assets aggressively (Vite fingerprints them)
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
