@@ -15,7 +15,6 @@ def main():
 
     # Box corners
     lat_top = LAT_C + LAT_SPAN / 2
-    lat_bot = LAT_C - LAT_SPAN / 2
     lon_left = LON_C - LON_SPAN / 2
     lon_right = LON_C + LON_SPAN / 2
 

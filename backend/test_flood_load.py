@@ -32,6 +32,6 @@ try:
     print(f"Output min: {output.min()}, max: {output.max()}")
     print(f"Total time (load+infer): {(end_time - start_time) * 1000:.2f} ms")
 
-except Exception as e:
+except Exception:
     traceback.print_exc()
     sys.exit(1)

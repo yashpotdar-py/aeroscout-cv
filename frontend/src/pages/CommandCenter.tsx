@@ -50,7 +50,28 @@ function Sidebar({ onBack }: { onBack: () => void }) {
   )
 }
 
-function StatusBar({ connected, data }: { connected: boolean; data: any }) {
+interface TelemetryData {
+  gps_source?: string
+  mode?: string
+  battery_remaining?: number | null
+  rpi_fix?: number
+  rpi_lat?: number | null
+  rpi_lon?: number | null
+  lat?: number | null
+  lon?: number | null
+  rpi_alt?: number | null
+  altitude?: number | null
+  rescue_path_pixels?: [number, number][] | null
+  flood_centroids?: [number, number][] | null
+  frame_b64?: string | null
+  flood_mask_b64?: string | null
+  flood_heatmap_b64?: string | null
+  flood_coverage?: number | null
+  connected?: boolean
+  [key: string]: unknown
+}
+
+function StatusBar({ connected, data }: { connected: boolean; data: TelemetryData | null }) {
   const gpsSource = data?.gps_source?.toUpperCase() ?? 'NONE'
   const mode = data?.mode?.toUpperCase() ?? 'STDBY'
   const battPct = data?.battery_remaining ?? null

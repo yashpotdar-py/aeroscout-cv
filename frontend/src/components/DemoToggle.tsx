@@ -4,7 +4,12 @@ export default function DemoToggle({ apiBase = 'http://localhost:8000' }: { apiB
   const [isDemoActive, setIsDemoActive] = useState<boolean>(false)
 
   const handleToggle = async () => {
-    try { await fetch(`${apiBase}/demo/${isDemoActive ? 'stop' : 'start'}`, { method: 'POST' }) } catch {}
+    try {
+      await fetch(`${apiBase}/demo/${isDemoActive ? 'stop' : 'start'}`, { method: 'POST' })
+    } catch (_err) {
+      // Network errors are intentionally swallowed — demo toggle is best-effort
+      void _err
+    }
     setIsDemoActive(!isDemoActive)
   }
 

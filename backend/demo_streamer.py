@@ -12,7 +12,6 @@ Usage:
 
 import logging
 import cv2
-import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)

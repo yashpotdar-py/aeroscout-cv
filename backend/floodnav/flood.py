@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 import torch
-import torch.nn.functional as F
 from PIL import Image
 
 from floodnav.models import get_device, load_unet_model, load_improved_model
