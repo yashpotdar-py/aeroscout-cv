@@ -15,7 +15,7 @@
 services:
   # ── Backend: FastAPI / ML inference ─────────────────────────────────────────
   - type: web
-    name: aeroscout-backend
+    name: aeroscout-cv-backend
     runtime: docker
     # Build from the backend/ subdirectory's Dockerfile
     dockerfilePath: ./backend/Dockerfile
@@ -40,7 +40,7 @@ services:
 
   # ── Frontend: React SPA (static site) ───────────────────────────────────────
   - type: web
-    name: aeroscout-frontend
+    name: aeroscout-cv-frontend
     runtime: static
     # Build from the repo root so the frontend/ directory is accessible
     buildCommand: cd frontend && npm ci && npm run build
@@ -54,7 +54,7 @@ services:
       - key: VITE_BACKEND_HTTP_URL
         fromService:
           type: web
-          name: aeroscout-backend
+          name: aeroscout-cv-backend
           envVarKey: RENDER_EXTERNAL_URL
     # ── SPA routing ────────────────────────────────────────────────────────────
     # All non-asset paths fall through to index.html so React Router works.
