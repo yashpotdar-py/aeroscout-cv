@@ -1,0 +1,15 @@
+name: Keep Render Links Alive
+on:
+  schedule:
+    - cron: '*/14 * * * *' # Pings every 14 minutes
+  workflow_dispatch:        # Allows you to run it manually
+
+jobs:
+  ping-services:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend
+        run: curl -I https://aeroscout-cv-backend.onrender.com
+
+      - name: Ping Frontend
+        run: curl -I https://aeroscout-cv-frontend.onrender.com/
