@@ -1,0 +1,41 @@
+# ─── Git LFS Tracked Files ─────────────────────────────────────────────────────
+# These patterns are stored in Git LFS (Large File Storage).
+# Run `git lfs pull` after cloning to download them.
+
+# Video files
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
+*.avi filter=lfs diff=lfs merge=lfs -text
+*.mkv filter=lfs diff=lfs merge=lfs -text
+*.webm filter=lfs diff=lfs merge=lfs -text
+
+# ML model weights
+*.pth filter=lfs diff=lfs merge=lfs -text
+*.pt filter=lfs diff=lfs merge=lfs -text
+*.onnx filter=lfs diff=lfs merge=lfs -text
+*.h5 filter=lfs diff=lfs merge=lfs -text
+*.pb filter=lfs diff=lfs merge=lfs -text
+
+# Large data files
+*.csv filter=lfs diff=lfs merge=lfs -text
+
+# Images (large)
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
+
+# ─── Text file line endings ─────────────────────────────────────────────────────
+# Normalize line endings to LF in the repository
+* text=auto eol=lf
+
+# Explicitly use CRLF for Windows-specific files
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files (not LFS, just mark as binary)
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary

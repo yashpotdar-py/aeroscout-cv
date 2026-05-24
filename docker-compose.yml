@@ -1,0 +1,52 @@
+name: aeroscout-cv
+version: "3.9"
+
+services:
+  # ── Backend ────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aeroscout-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - MODEL_PATH=${MODEL_PATH:-models/flood_unet.pth}
+      - MAVLINK_CONNECTION=${MAVLINK_CONNECTION:-udpin:0.0.0.0:14550}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      # Mount demo data so the container can access video + CSV
+      - ./backend/demo_data:/app/demo_data:ro
+      # Mount models directory for optional ML model weights
+      - ./backend/models:/app/models:ro
+    networks:
+      - aeroscout-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── Frontend ───────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aeroscout-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_BACKEND_WS_URL=${VITE_BACKEND_WS_URL:-ws://localhost:8000/ws}
+      - VITE_BACKEND_HTTP_URL=${VITE_BACKEND_HTTP_URL:-http://localhost:8000}
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - aeroscout-net
+
+networks:
+  aeroscout-net:
+    driver: bridge

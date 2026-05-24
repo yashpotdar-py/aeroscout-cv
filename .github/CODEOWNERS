@@ -1,0 +1,20 @@
+# CODEOWNERS
+# These owners will be requested for review on all PRs.
+# Order matters — last matching pattern takes precedence.
+
+# Global owners
+* @yashpotdar-py
+
+# Backend
+/backend/ @yashpotdar-py
+
+# Frontend
+/frontend/ @yashpotdar-py
+
+# Documentation
+/docs/ @yashpotdar-py
+*.md @yashpotdar-py
+
+# Infrastructure
+docker-compose.yml @yashpotdar-py
+/.github/ @yashpotdar-py

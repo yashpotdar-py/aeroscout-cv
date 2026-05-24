@@ -1,0 +1,24 @@
+# AeroScout Backend — Python Dependencies
+# Last updated: 2026-05-24
+
+# ── Web Framework ──────────────────────────────────────────────────────────────
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+
+# ── MAVLink ────────────────────────────────────────────────────────────────────
+pymavlink==2.4.42
+
+# ── Data Processing ────────────────────────────────────────────────────────────
+pandas==2.2.3
+numpy==2.2.6
+scipy==1.15.3
+
+# ── Computer Vision ────────────────────────────────────────────────────────────
+# Use headless variant in Docker (no GUI display dependencies)
+opencv-python-headless==4.11.0.86
+Pillow==11.2.1
+
+# ── Async & Utilities ──────────────────────────────────────────────────────────
+pydantic==2.11.5
+python-multipart==0.0.20
+httpx==0.28.1
